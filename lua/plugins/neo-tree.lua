@@ -25,7 +25,7 @@ return {
         enable_character_fade = true,
       },
       icon = {
-        default = "",
+        default = "",
         highlight = "NeoTreeFileIcon",
       },
     },
