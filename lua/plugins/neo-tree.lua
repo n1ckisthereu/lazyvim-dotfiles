@@ -1,11 +1,11 @@
--- require("nvim-web-devicons").setup({
---   override_by_filename = {
---     [".prettierrc"] = {
--- default = require("nvim-web-devicons").get_default_icon(),
---       name = "PrettierConfig",
---     },
---   },
--- })
+require("nvim-web-devicons").setup({
+  override_by_filename = {
+    [".prettierrc"] = {
+      default = require("nvim-web-devicons").get_default_icon(),
+      name = "PrettierConfig",
+    },
+  },
+})
 
 return {
   "nvim-neo-tree/neo-tree.nvim",
