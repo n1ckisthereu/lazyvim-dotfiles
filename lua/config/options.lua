@@ -18,6 +18,9 @@ if vim.g.neovide then
   )
   vim.api.nvim_set_keymap("n", "<C-0>", ":lua vim.g.neovide_scale_factor = 1<CR>", { silent = true })
 
+  vim.g.neovide_transparency = 1
+  vim.g.transparency = 1
+  --
   -- vim.api.nvim_set_keymap("n", "<C-+>",
   --   ":lua vim.g.neovide_transparency = math.min(vim.g.neovide_transparency + 0.05, 1.0)<CR>", { silent = true })
   -- vim.api.nvim_set_keymap("n", "<C-_>",
@@ -25,3 +28,5 @@ if vim.g.neovide then
   --
   -- vim.api.nvim_set_keymap("n", "<C-S-I)>", ":lua vim.g.neovide_transparency = 0.9<CR>", { silent = true })
 end
+
+vim.opt.swapfile = false
