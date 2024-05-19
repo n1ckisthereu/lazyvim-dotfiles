@@ -1,6 +1,8 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   opts = {
-    ensure_installed = {},
+    ensure_installed = {
+      "astro",
+    },
   },
 }

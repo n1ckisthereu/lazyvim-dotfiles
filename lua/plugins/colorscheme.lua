@@ -9,11 +9,11 @@
 -- }
 
 return {
-  "Shatup/neovim-ayu",
+  "bluz71/vim-moonfly-colors",
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "ayu-dark",
+      colorscheme = "moonfly",
     },
   },
 }
