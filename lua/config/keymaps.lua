@@ -27,6 +27,8 @@
 --   }
 -- end
 --
+require("markdown-utils")
+
 if vim.g.neovide then
   vim.cmd([[
     nmap <c-c> "+y
