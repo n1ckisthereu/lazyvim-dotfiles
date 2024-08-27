@@ -1,11 +1,12 @@
-local function generate_toc(lines, options)
+local autosave_enabled = false
+
+local function generate_toc(lines)
   local toc = {}
   local headers = {}
   local max_level = 6
-  local min_level = 2 -- Ignorar o primeiro nível (h1)
-  local tab_size = options.tab_size or 2
-  local markers = options.markers or { "*", "+", "-" }
-
+  local min_level = 2 -- Ignore h1
+  local tab_size = 2
+  local markers = { "-" }
   for _, line in ipairs(lines) do
     local level, title = line:match("^(#+)%s+(.+)")
     if level and #level >= min_level and #level <= max_level then
@@ -13,33 +14,33 @@ local function generate_toc(lines, options)
       table.insert(headers, { level = #level, title = title, id = id })
     end
   end
-
   for _, header in ipairs(headers) do
     local indent = string.rep(" ", (header.level - min_level) * tab_size)
     local marker = markers[(header.level - min_level) % #markers + 1]
     table.insert(toc, string.format("%s%s [%s](#%s)", indent, marker, header.title, header.id))
   end
-
   return toc
 end
 
-local function gen_toc(action, options)
-  options = options or {}
-  options.tab_size = options.tab_size or 2
-  options.markers = options.markers or { "*", "+", "-" }
-
+local function toc_exists()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local toc = generate_toc(lines, options)
+  for _, line in ipairs(lines) do
+    if line:match("<!%-%-toc:start%-%->") then
+      return true
+    end
+  end
+  return false
+end
 
+local function call_gen(action)
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local toc = generate_toc(lines)
   if #toc == 0 then
     print("No headers found to generate TOC")
     return
   end
-
   local result = "<!--toc:start-->\n" .. table.concat(toc, "\n") .. "\n<!--toc:end-->"
-
   local start_index, end_index
-
   for i, line in ipairs(lines) do
     if line:match("<!%-%-toc:start%-%->") then
       start_index = i
@@ -48,9 +49,7 @@ local function gen_toc(action, options)
       break
     end
   end
-
   local new_lines = vim.split(result, "\n", { trimempty = false })
-
   if action == "update" and start_index and end_index then
     -- Update existing TOC
     vim.api.nvim_buf_set_lines(0, start_index - 1, end_index, false, new_lines)
@@ -64,9 +63,9 @@ local function gen_toc(action, options)
 end
 
 vim.api.nvim_create_user_command("InsertTOC", function()
-  gen_toc("insert", { tab_size = 2, markers = { "*", "+", "-" } })
+  call_gen("insert")
 end, {
-  desc = "Inserir uma Tabela de Conteúdo no cursor atual",
+  desc = "Insert toc on actual cursor position",
   nargs = "*",
   complete = function()
     return { "tab_size", "markers" }
@@ -74,19 +73,37 @@ end, {
 })
 
 vim.api.nvim_create_user_command("UpdateTOC", function()
-  gen_toc("update", { tab_size = 2, markers = { "-" } })
+  call_gen("update")
 end, {
-  desc = "Atualizar a Tabela de Conteúdo existente",
+  desc = "Update existing table",
   nargs = "*",
   complete = function()
     return { "tab_size", "markers" }
   end,
 })
 
--- Autocommand para atualizar o TOC ao salvar arquivos markdown
+vim.api.nvim_create_user_command("ToggleAutoTOC", function()
+  if toc_exists() then
+    autosave_enabled = not autosave_enabled
+    if autosave_enabled then
+      print("AutoTOC enabled")
+    else
+      print("AutoTOC disabled")
+    end
+  else
+    print("No TOC found. Insert a TOC first using :InsertTOC")
+  end
+end, {
+  desc = "Toggle automatic TOC update on save",
+})
+
+local augroup = vim.api.nvim_create_augroup("MarkdownTOC", { clear = true })
 vim.api.nvim_create_autocmd("BufWritePre", {
+  group = augroup,
   pattern = "*.md",
   callback = function()
-    gen_toc("update", { tab_size = 2, markers = { "-" } })
+    if autosave_enabled and toc_exists() then
+      call_gen("update")
+    end
   end,
 })
