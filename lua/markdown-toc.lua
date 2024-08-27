@@ -1,4 +1,26 @@
 local autosave_enabled = false
+local numbering_enabled = false
+
+local function remove_toc()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local start_index, end_index
+
+  for i, line in ipairs(lines) do
+    if line:match("<!%-%-toc:start%-%->") then
+      start_index = i
+    elseif line:match("<!%-%-toc:end%-%->") then
+      end_index = i
+      break
+    end
+  end
+
+  if start_index and end_index then
+    vim.api.nvim_buf_set_lines(0, start_index - 1, end_index, false, {})
+    print("TOC removed successfully")
+  else
+    print("No TOC found in the document")
+  end
+end
 
 local function generate_toc(lines)
   local toc = {}
@@ -7,6 +29,8 @@ local function generate_toc(lines)
   local min_level = 2 -- Ignore h1
   local tab_size = 2
   local markers = { "-" }
+  local numbering = {}
+
   for _, line in ipairs(lines) do
     local level, title = line:match("^(#+)%s+(.+)")
     if level and #level >= min_level and #level <= max_level then
@@ -14,10 +38,30 @@ local function generate_toc(lines)
       table.insert(headers, { level = #level, title = title, id = id })
     end
   end
+
   for _, header in ipairs(headers) do
-    local indent = string.rep(" ", (header.level - min_level) * tab_size)
-    local marker = markers[(header.level - min_level) % #markers + 1]
-    table.insert(toc, string.format("%s%s [%s](#%s)", indent, marker, header.title, header.id))
+    local level = header.level - min_level + 1
+    local indent = string.rep(" ", (level - 1) * tab_size)
+    local marker = markers[(level - 1) % #markers + 1]
+
+    local number = ""
+    if numbering_enabled then
+      -- Adjust the size of table of numeration to the actual level
+      while #numbering > level do
+        table.remove(numbering)
+      end
+      while #numbering < level do
+        table.insert(numbering, 0)
+      end
+
+      -- Increment the number of actual level
+      numbering[level] = numbering[level] + 1
+
+      -- Build the string of numeration
+      number = table.concat(numbering, ".") .. " "
+    end
+
+    table.insert(toc, string.format("%s%s [%s%s](#%s)", indent, marker, number, header.title, header.id))
   end
   return toc
 end
@@ -91,10 +135,31 @@ vim.api.nvim_create_user_command("ToggleAutoTOC", function()
       print("AutoTOC disabled")
     end
   else
-    print("No TOC found. Insert a TOC first using :InsertTOC")
+    autosave_enabled = false
+    print("No TOC found. AutoTOC disabled. Insert a TOC first using :InsertTOC")
   end
 end, {
   desc = "Toggle automatic TOC update on save",
+})
+
+vim.api.nvim_create_user_command("ToggleTOCNumbering", function()
+  numbering_enabled = not numbering_enabled
+  if numbering_enabled then
+    print("TOC numbering enabled")
+  else
+    print("TOC numbering disabled")
+  end
+  if toc_exists() then
+    call_gen("update")
+  end
+end, {
+  desc = "Toggle TOC numbering",
+})
+
+vim.api.nvim_create_user_command("RemoveTOC", function()
+  remove_toc()
+end, {
+  desc = "Remove the Table of Contents",
 })
 
 local augroup = vim.api.nvim_create_augroup("MarkdownTOC", { clear = true })
