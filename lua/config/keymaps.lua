@@ -28,6 +28,7 @@
 -- end
 --
 require("markdown-utils")
+require("markdown-toc")
 
 if vim.g.neovide then
   vim.cmd([[
