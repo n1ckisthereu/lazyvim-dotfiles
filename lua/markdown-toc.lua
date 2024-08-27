@@ -45,27 +45,6 @@ local function generate_toc(lines)
   return toc
 end
 
-local function remove_toc()
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local start_index, end_index
-
-  for i, line in ipairs(lines) do
-    if line:match("<!%-%-toc:start%-%->") then
-      start_index = i
-    elseif line:match("<!%-%-toc:end%-%->") then
-      end_index = i
-      break
-    end
-  end
-
-  if start_index and end_index then
-    vim.api.nvim_buf_set_lines(0, start_index - 1, end_index, false, {})
-    print("TOC removed successfully")
-  else
-    print("No TOC found in the document")
-  end
-end
-
 local function toc_exists()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   for _, line in ipairs(lines) do
@@ -159,7 +138,24 @@ end, {
 })
 
 vim.api.nvim_create_user_command("RemoveTOC", function()
-  remove_toc()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local start_index, end_index
+
+  for i, line in ipairs(lines) do
+    if line:match("<!%-%-toc:start%-%->") then
+      start_index = i
+    elseif line:match("<!%-%-toc:end%-%->") then
+      end_index = i
+      break
+    end
+  end
+
+  if start_index and end_index then
+    vim.api.nvim_buf_set_lines(0, start_index - 1, end_index, false, {})
+    print("TOC removed successfully")
+  else
+    print("No TOC found in the document")
+  end
 end, {
   desc = "Remove the Table of Contents",
 })
