@@ -170,3 +170,17 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end
   end,
 })
+
+vim.api.nvim_set_keymap("n", "<leader>md", ":RemoveTOC<CR>", { noremap = true, silent = true, desc = "Remove TOC" })
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>mn",
+  ":ToggleTOCNumbering<CR>",
+  { noremap = true, silent = true, desc = "Toggle TOC Numbering" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>ms",
+  ":ToggleAutoTOC<CR>",
+  { noremap = true, silent = true, desc = "Toggle Auto TOC" }
+)
