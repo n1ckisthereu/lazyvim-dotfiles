@@ -13,7 +13,7 @@ local function generate_toc(lines)
   for _, line in ipairs(lines) do
     local level, title = line:match("^(#+)%s+(.+)")
     if level and #level >= min_level and #level <= max_level then
-      local id = title:lower():gsub("%s+", "-"):gsub("[^%w-]", "")
+      local id = title:lower():gsub("%s+", "-")
       table.insert(headers, { level = #level, title = title, id = id })
     end
   end
