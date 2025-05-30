@@ -7,7 +7,3 @@ require("markdown-toc")
 
 vim.opt.swapfile = false
 vim.g.snacks_animate = false
-
-vim.g.moonflyTransparent = true
-vim.g.moonflyCursorColor = true
-vim.g.moonflyUnderlineMatchParen = true
