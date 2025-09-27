@@ -21,8 +21,8 @@ for _, check in ipairs(packagesToCheck) do
 end
 
 return {
-  "williamboman/mason.nvim",
-  dependencies = { "williamboman/mason.nvim" },
+  "mason-org/mason.nvim",
+  dependencies = { "mason-org/mason.nvim" },
   opts = {
     ensure_installed = packages,
   },
